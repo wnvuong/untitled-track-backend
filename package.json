@@ -3,9 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node app.js"
+    "start": "nodemon app.js"
   },
   "dependencies": {
-    "express": "~4.15.5"
+    "express": "~4.15.5",
+    "mongodb": "^3.0.0-rc0",
+    "nodemon": "^1.12.5"
   }
 }
