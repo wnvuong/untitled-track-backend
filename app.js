@@ -1,15 +1,15 @@
-const { s3Credentials } = require('./s3credentials');
-const crypto = require('crypto');
-const path = require('path');
-const fs = require('fs');
-const express = require('express');
+const { s3Credentials } = require("./s3credentials");
+const crypto = require("crypto");
+const path = require("path");
+const fs = require("fs");
+const express = require("express");
 const app = express();
-const bodyParser = require('body-parser');
+const bodyParser = require("body-parser");
 
-const db = require('./db');
+const db = require("./db");
 const port = 4000;
-const s3config = JSON.parse(fs.readFileSync('./s3config.json', 'utf8'));
-const mongoConfig = JSON.parse(fs.readFileSync('./mongoConfig.json', 'utf8'));
+const s3config = JSON.parse(fs.readFileSync("./s3config.json", "utf8"));
+const mongoConfig = JSON.parse(fs.readFileSync("./mongoConfig.json", "utf8"));
 
 app.use(
   bodyParser.urlencoded({
@@ -18,16 +18,32 @@ app.use(
 );
 app.use(bodyParser.json());
 
-app.get('/api/tracks', (req, res) => {
-  const collection = db.get().collection('tracks');
+app.get("/api/projects", (req, res) => {
+  const collection = db.get().collection("projects");
   collection.find().toArray((err, docs) => {
-    res.json({ tracks: docs });
+    res.json({ projects: docs });
   });
 });
 
-app.post('/api/tracks', (req, res) => {
+app.post("/api/projects", (req, res) => {
   console.log(req.body);
-  res.json(req.body);
+  const collection = db.get().collection("projects");
+  collection
+    .update(
+      {
+        name: req.body.projectName
+      },
+      {
+        name: req.body.projectName
+      },
+      { upsert: true }
+    )
+    .then(result => {
+      res.json(result);
+    })
+    .catch(error => {
+      res.json(error);
+    });
   // const collection = db.collection('tracks');
   // collection.insert([
   //   {a : 1}, {a : 2}, {a : 3}
@@ -40,10 +56,10 @@ app.post('/api/tracks', (req, res) => {
   // });
 });
 
-app.get('/api/s3credentials', (req, res) => {
+app.get("/api/s3credentials", (req, res) => {
   if (req.query.filename) {
     var filename =
-      crypto.randomBytes(16).toString('hex') + path.extname(req.query.filename);
+      crypto.randomBytes(16).toString("hex") + path.extname(req.query.filename);
     res.json(
       s3Credentials(s3config, {
         filename: filename,
@@ -51,13 +67,13 @@ app.get('/api/s3credentials', (req, res) => {
       })
     );
   } else {
-    res.status(400).send('filename is required');
+    res.status(400).send("filename is required");
   }
 });
 
 db.connect(mongoConfig.dbUrl, mongoConfig.dbName, err => {
   if (err) {
-    console.log('Unable to connect to Mongo.');
+    console.log("Unable to connect to Mongo.");
     process.exit(1);
   } else {
     app.listen(port, () => {
