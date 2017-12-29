@@ -25,6 +25,15 @@ app.get('/api/projects', (req, res) => {
   });
 });
 
+app.post('/api/tracks', (req, res) => {
+  const collection = db.get().collection('tracks');
+  collection.insert({
+    name: req.body.project
+  });
+  console.log(req.body);
+  res.json(req.body);
+});
+
 app.post('/api/projects', (req, res) => {
   const collection = db.get().collection('projects');
   collection
